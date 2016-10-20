@@ -54,7 +54,6 @@ class Table(object):
             ', '.join(fields),
             ', '.join(':'+f for f in fields))
 
-        print(sql, kwargs)
         cursor = self.cursor(cursor)
         cursor.execute(sql, kwargs)
         if return_id:
