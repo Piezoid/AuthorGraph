@@ -30,7 +30,7 @@ def text_cleaning(abstract, language, option, name_list_output):
     if option == "stem":
         for i in abstract_stopwords:
             word_stemming = porter_stemmer.stem(i)
-            expression_prohibited = re.sub("[ .,;:\n\t\r]", '', word_stemming)
+            expression_prohibited = re.sub("[( .,;:\n\t\r)]", '', word_stemming)
             if expression_prohibited != '':
                 name_list_output.append(word_stemming)
 
@@ -39,7 +39,7 @@ def text_cleaning(abstract, language, option, name_list_output):
         tb2wn = {'J': wordnet.ADJ, 'V': wordnet.VERB, 'N': wordnet.NOUN, 'R': wordnet.ADV}
         for w, pos in nltk.pos_tag(abstract_stopwords):
             word_lemmatization = wnl.lemmatize(w, pos=tb2wn.get(pos[0], 'n'))
-            expression_prohibited = re.sub("[ .,;:\n\t\r]", '', word_lemmatization)
+            expression_prohibited = re.sub("[( .,;:\n\t\r)]", '', word_lemmatization)
             if expression_prohibited != '':
                 name_list_output.append(word_lemmatization)
     
