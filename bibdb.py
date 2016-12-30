@@ -51,7 +51,7 @@ class Author:
             lname_parts = []
             initial_parts = []
             # First name is split into parts, some are kept in last name
-            for name_part in fname.title().split(' '):
+            for name_part in fname.title().replace('-', ' ').split(' '):
                 if not name_part or name_part in uninformative_name_parts:
                     continue
 
@@ -157,6 +157,8 @@ class PaginatedRef(Ref):
         self.ref = title.rstrip('. ').lstrip().lower()
         if isinstance(pstart, str) and pend is None:
             pstart, pend = PaginatedRef.get_pages(pstart)
+            if pstart == 1:
+                pstart = None
         self.pstart = pstart
         self.pend = pend
 
@@ -166,6 +168,18 @@ class PaginatedRef(Ref):
             return None # untestable inclusion
         return self.pstart >= other.pstart and self.pend <= other.pend
 
+    def pstart_eq(self, other):
+        if self.pstart is None or other.pstart is None:
+            return None
+        else:
+            return self.pstart == other.pstart
+
+    def pend_eq(self, other):
+        if self.pend is None or other.pend is None:
+            return None
+        else:
+            return self.pend == other.pend
+
     def __eq__(self, other):
         if self is other:
             return True
@@ -173,13 +187,8 @@ class PaginatedRef(Ref):
             return False
         elif self.includedin(other) or other.includedin(self):
             return True
-        elif self.pstart != other.pstart:
-            return False
-        elif self.pend is None or other.pend is None or self.pend == other.pend:
-            return True
         else:
-            logger.warning('End page mismatch %r %r', self, other)
-            return False
+            return self.pstart_eq(other) or self.pend_eq(other)
 
     def __ior__(self, other):
         no_pstart = self.pstart is None
@@ -225,6 +234,8 @@ class PaginatedRef(Ref):
     def _asstr(self):
         if self.pend is None:
             pages = str(self.pstart)
+        elif self.pstart is None:
+            return self.ref
         else:
             pages = '%d-%d' % (self.pstart, self.pend)
         return '%r p%s' % (self.ref, pages)
@@ -365,14 +376,14 @@ class Publication:
             self.en_abstract = other.en_abstract
         elif other.en_abstract is not None:
             if self.en_abstract != other.en_abstract:
-                logger.warning('Different abastracts for %r', self)
+                logger.info('Different abastracts for %r', self)
                 self.en_abstract = max(self.en_abstract, other.en_abstract, key=len)
 
         if self.fr_abstract is None:
             self.fr_abstract = other.fr_abstract
         elif other.fr_abstract is not None:
             if self.fr_abstract != other.fr_abstract:
-                logger.warning('Different french abastracts for %r', self)
+                logger.info('Different french abastracts for %r', self)
                 self.fr_abstract = max(self.fr_abstract, other.fr_abstract, key=len)
         return self
 
@@ -419,7 +430,8 @@ class PubDB:
         ref2existing_pubs = defaultdict(set) # Count the number of shared refs
         existing_pub = None
         for ref, existing_pub_candidate in self.lookup_byrefs(pub.refs):
-            ref2existing_pubs[existing_pub_candidate].add(ref)
+            if not isinstance(ref, PaginatedRef) or type(ref.pstart) is int:
+                ref2existing_pubs[existing_pub_candidate].add(ref)
             if existing_pub_candidate == pub: # Exact match as eq
                 existing_pub = existing_pub_candidate
                 break
