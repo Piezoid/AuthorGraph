@@ -16,8 +16,8 @@ def esearch(get, term):
         author = term
         if author.fname:
             term = "%s, %s[FAU] " % (author.lname, author.fname)
-        elif author.initials:
-            term = "%s %s[AU]" % (author.lname, author.initials)
+        elif author.fname_initials:
+            term = "%s %s[AU]" % (author.lname, author.fname_initials)
         else:
             term = "%s[AU] " % author.lname
     else:
