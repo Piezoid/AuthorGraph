@@ -1,4 +1,8 @@
 __pycache__
 .ipynb_checkpoints
 private.py
-*.sqlite
+*.pk*
+lsimodel*
+hdpmodel*
+*.npz
+
