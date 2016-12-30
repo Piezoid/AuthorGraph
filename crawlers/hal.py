@@ -50,10 +50,9 @@ def getids(record):
 
 
 def hal_authorsearch(get, author):
-    if isinstance(author, Author):
-        author = str(author)
+    assert isinstance(author, Author)
 
-    query = {'authFullName_t': author}
+    query = {'authFullName_t': str(author)}
     fields = ['authFullName_s', 'producedDate_tdate', '*_abstract_s', 'language_s',
               #'files_s',
               # Identification
@@ -79,9 +78,12 @@ def hal_authorsearch(get, author):
     if 'response' not in r:
         print(r)
     for record in r['response']['docs']:
+        authors = [Author(author) for author in record['authFullName_s']]
+        if not author in authors:
+            continue
+
         refs = getids(record)
         date = dateparser.parse(record['producedDate_tdate'])
-        authors = [Author(author) for author in record['authFullName_s']]
 
         en_abstract = record.get('en_abstract_s')
         if en_abstract is not None:

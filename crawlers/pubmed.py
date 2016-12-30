@@ -125,5 +125,5 @@ def efetch(get, pubmedid):
 def pubmed_authorsearch(get, author):
     for pmid in esearch(get, author):
         pub = efetch(get, pmid)
-        if pub is not None:
+        if pub is not None and author in pub.authors:
             yield pub
